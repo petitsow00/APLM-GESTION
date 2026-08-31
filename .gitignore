@@ -1,13 +1,12 @@
 # ============================================================
-#  Fichiers a NE JAMAIS publier sur GitHub
+#  Fichiers a NE PAS publier sur GitHub
 # ============================================================
-
-# --- Donnees privees (clients, agence, recus) ---
-# Contiennent des informations personnelles : jamais en ligne.
-data/
-recus/
-*.db
-parametres.json
+#
+#  NOTE : a la demande du proprietaire, les donnees (clients,
+#  dossiers, paiements, recus) SONT incluses dans ce depot PRIVE.
+#  -> Ne rendez JAMAIS ce depot public sans les avoir retirees.
+#
+# ------------------------------------------------------------
 
 # --- Artefacts de construction Windows (lourds, regenerables) ---
 build/

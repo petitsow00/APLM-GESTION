@@ -1,0 +1,24 @@
+# ============================================================
+#  Fichiers a NE JAMAIS publier sur GitHub
+# ============================================================
+
+# --- Donnees privees (clients, agence, recus) ---
+# Contiennent des informations personnelles : jamais en ligne.
+data/
+recus/
+*.db
+parametres.json
+
+# --- Artefacts de construction Windows (lourds, regenerables) ---
+build/
+dist/
+
+# --- Fichiers temporaires Python ---
+__pycache__/
+*.pyc
+*.pyo
+
+# --- Fichiers systeme ---
+.DS_Store
+Thumbs.db
+desktop.ini

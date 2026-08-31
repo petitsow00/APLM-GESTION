@@ -1,0 +1,7 @@
+# Modules Python nécessaires au logiciel APLM BUZNESS COMPANY
+# Pour tout réinstaller sur un autre ordinateur :
+#     python -m pip install -r requirements.txt
+customtkinter
+fpdf2
+Pillow
+tkcalendar

@@ -1,0 +1,66 @@
+====================================================================
+   LOGICIEL DE GESTION — APLM BUZNESS COMPANY
+   Agence de voyages (fonctionne SANS Internet)
+====================================================================
+
+-------------------------------------------------
+COMMENT LANCER LE LOGICIEL
+-------------------------------------------------
+1. Ouvrez le dossier APLM_Voyages.
+2. Double-cliquez sur le fichier :  «Lancer APLM.bat»
+   -> La fenetre du logiciel s'ouvre.
+
+Si le logiciel ne s'ouvre pas, utilisez plutot :
+   «Lancer APLM (mode diagnostic).bat»
+   Cette version garde une fenetre noire ouverte qui affiche les
+   messages d'erreur (utile pour trouver le probleme).
+
+-------------------------------------------------
+CE QUE FAIT LE LOGICIEL
+-------------------------------------------------
+- Tableau de bord : chiffres cles (clients, dossiers, argent).
+- Clients   : ajouter / modifier / rechercher vos clients.
+- Dossiers  : un dossier = un voyage pour un client.
+      Dans un dossier vous ajoutez :
+        * des Reservations / Billets (avec prix de vente)
+        * des Paiements (le solde se calcule tout seul)
+      Bouton «Generer recu PDF» -> cree un recu professionnel.
+
+- Langue : bouton «Francais / English» en bas a gauche.
+
+-------------------------------------------------
+LES RECUS (IMPORTANT)
+-------------------------------------------------
+Le recu affiche UNIQUEMENT :
+   - APLM BUZNESS COMPANY et ses coordonnees
+   - les informations du client et du voyage
+Il n'affiche JAMAIS :
+   - les consolidateurs (Raya Travel, Bleujay, Travelgenex)
+   - les GDS (Amadeus, Galileo, APG)
+   - le prix d'achat interne
+Ces informations restent enregistrees en interne pour votre suivi,
+mais ne sortent jamais sur les documents remis au client.
+
+Les recus PDF sont ranges dans le dossier :  recus\
+
+-------------------------------------------------
+OU SONT MES DONNEES ?
+-------------------------------------------------
+Toutes vos donnees sont dans UN seul fichier :  data\aplm.db
+=> Pour faire une SAUVEGARDE, copiez simplement ce fichier
+   (par exemple sur une cle USB).
+
+-------------------------------------------------
+POUR AJOUTER VOTRE LOGO
+-------------------------------------------------
+Placez votre image (format PNG de preference) ici :
+   assets\logo.png
+Elle apparaitra automatiquement en haut des recus.
+
+-------------------------------------------------
+POUR MODIFIER LES INFOS DE L'AGENCE
+-------------------------------------------------
+(adresse, telephone, email affiches sur les recus)
+Ces informations se trouvent dans le fichier «config.py».
+Demandez de l'aide si besoin pour les modifier.
+====================================================================

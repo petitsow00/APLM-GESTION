@@ -1,0 +1,15 @@
+# Normalisation des fins de ligne dans le depot
+* text=auto
+
+# Le lanceur macOS DOIT rester en LF (sinon il ne demarre pas sur Mac)
+*.command text eol=lf
+*.sh       text eol=lf
+
+# Les fichiers Windows restent en CRLF
+*.bat text eol=crlf
+
+# Fichiers binaires (pas de conversion)
+*.png binary
+*.ico binary
+*.db  binary
+*.pdf binary

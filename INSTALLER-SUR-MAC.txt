@@ -1,0 +1,75 @@
+============================================================
+  APLM BUZNESS COMPANY — INSTALLER SUR MAC (MacBook Air 2013, Intel)
+============================================================
+
+Cette application est 100 % Python. Elle est legere et tourne bien
+sur un Mac Intel. Suivez ces 6 etapes dans l'ordre.
+
+------------------------------------------------------------
+ETAPE 1 — INSTALLER PYTHON 3.12
+------------------------------------------------------------
+- Allez sur : https://www.python.org/downloads/
+- Telechargez "Python 3.12" -> installeur "macOS 64-bit universal2"
+  (il fonctionne sur votre Mac Intel).
+- Installez-le normalement (Suivant / Continuer).
+
+IMPORTANT : n'utilisez PAS le Python deja present sur le Mac,
+son interface serait bugguee. Utilisez bien celui de python.org.
+
+------------------------------------------------------------
+ETAPE 2 — COPIER LE PROJET SUR LE MAC
+------------------------------------------------------------
+- Copiez le dossier "APLM_Voyages" sur le Mac (cle USB, AirDrop, cloud...).
+- Vous pouvez IGNORER les dossiers "build" et "dist" : ce sont les
+  versions Windows, lourdes et inutiles sur Mac.
+
+------------------------------------------------------------
+ETAPE 3 — INSTALLER LES DEPENDANCES
+------------------------------------------------------------
+- Ouvrez l'application "Terminal".
+- Tapez ces commandes (adaptez le chemin du dossier) :
+
+    cd ~/Desktop/APLM_Voyages
+    pip3 install -r requirements.txt
+
+------------------------------------------------------------
+ETAPE 4 — COPIER VOS DONNEES (vos clients, dossiers, etc.)
+------------------------------------------------------------
+Depuis Windows, prenez ces 2 fichiers dans :
+    Documents\APLM BUZNESS COMPANY\data\
+    -> aplm.db
+    -> parametres.json
+
+Et copiez-les dans le dossier "data" du projet sur le Mac :
+    APLM_Voyages/data/
+
+REMARQUE : en lancant depuis le code, l'application lit ses donnees
+dans le dossier "data" DU PROJET (et non dans Documents comme sur Windows).
+
+------------------------------------------------------------
+ETAPE 5 — RENDRE LE LANCEUR EXECUTABLE (une seule fois)
+------------------------------------------------------------
+Dans le Terminal, dans le dossier du projet :
+
+    chmod +x "Lancer APLM.command"
+
+------------------------------------------------------------
+ETAPE 6 — LANCER L'APPLICATION
+------------------------------------------------------------
+- Double-cliquez sur "Lancer APLM.command"
+  (ou, dans le Terminal : python3 main.py)
+
+Si macOS affiche un avertissement de securite au 1er lancement :
+clic droit sur "Lancer APLM.command" -> "Ouvrir" -> "Ouvrir".
+
+============================================================
+  BESOIN D'UNE VRAIE APP .app DOUBLE-CLIQUABLE ?
+============================================================
+C'est possible, mais il faut la construire SUR le Mac avec PyInstaller.
+Demandez de l'aide pour cette etape le moment venu.
+
+============================================================
+  RIEN N'A ETE SUPPRIME NI MODIFIE DANS LES FONCTIONNALITES.
+  Les memes ecrans qu'avant : Tableau de bord (avec Benefice),
+  Clients, Dossiers, Historique clients, Historique transactions, Reglages.
+============================================================

@@ -6,7 +6,7 @@ binaries = []
 # Modules internes de l'application (par sécurité, pour qu'ils soient
 # TOUJOURS embarqués dans le .exe, y compris ceux importés "à la demande").
 hiddenimports = [
-    'auth', 'reseau', 'db_client', 'db_serveur', 'sauvegarde',
+    'auth', 'reseau', 'db_client', 'db_serveur', 'tls', 'sauvegarde',
     'comptabilite', 'pdf_comptabilite', 'pdf_listes', 'pdf_receipt',
     'database', 'settings', 'config', 'i18n', 'utils',
     'ui.app', 'ui.dashboard_view', 'ui.clients_view', 'ui.dossiers_view',
@@ -31,6 +31,8 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('fpdf2')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('darkdetect')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+tmp_ret = collect_all('cryptography')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 

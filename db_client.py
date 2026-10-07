@@ -13,13 +13,31 @@ résultat.
 Ainsi, TOUTES les fonctions existantes (creer_client, balance, etc.)
 fonctionnent SANS AUCUNE MODIFICATION : elles croient parler à SQLite.
 
-Communication : requête HTTP POST vers http://<hote>:<port>/sql,
+Communication : requête HTTPS (chiffrée) POST vers https://<hote>:<port>/sql,
 protégée par une clé secrète partagée (en-tête X-Cle).
+
+Le serveur utilise un certificat auto-signé (voir tls.py) : valable pour
+chiffrer les échanges sur le réseau local, mais pas "garanti" par une autorité
+officielle. On accepte donc ce certificat sans vérification d'identité
+(`CERT_NONE`) — l'important ici est que la communication soit CHIFFRÉE
+(illisible pour quelqu'un qui écoute le réseau), la clé partagée X-Cle reste
+la protection contre les intrus.
 """
 
 import json
+import ssl
 import urllib.request
 import urllib.error
+
+
+def _contexte_ssl():
+    """Contexte HTTPS qui accepte le certificat auto-signé du serveur
+    (réseau local de confiance) : on chiffre, sans exiger un certificat
+    "officiel" qui n'existe pas pour un serveur fait maison."""
+    contexte = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    contexte.check_hostname = False
+    contexte.verify_mode = ssl.CERT_NONE
+    return contexte
 
 
 class ErreurReseau(Exception):
@@ -70,7 +88,7 @@ class ConnexionDistante:
     """Imite une connexion SQLite, mais envoie les requêtes au serveur."""
 
     def __init__(self, hote, port, cle):
-        self._url = f"http://{hote}:{port}/sql"
+        self._url = f"https://{hote}:{port}/sql"
         self._cle = cle or ""
         self.row_factory = None  # présent pour compatibilité, ignoré
 
@@ -105,7 +123,8 @@ class ConnexionDistante:
             self._url, data=corps, method="POST",
             headers={"Content-Type": "application/json", "X-Cle": self._cle})
         try:
-            with urllib.request.urlopen(requete, timeout=15) as reponse:
+            with urllib.request.urlopen(requete, timeout=15,
+                                        context=_contexte_ssl()) as reponse:
                 donnees = json.loads(reponse.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
             detail = ""
@@ -135,7 +154,7 @@ def authentifier_distant(hote, port, cle, identifiant, mot_de_passe):
     jamais le serveur.
     Renvoie {"ok": True, "utilisateur": {...}} ou {"ok": False, "raison": "..."}.
     """
-    url = f"http://{hote}:{port}/connexion"
+    url = f"https://{hote}:{port}/connexion"
     corps = json.dumps({
         "identifiant": identifiant,
         "mot_de_passe": mot_de_passe,
@@ -144,7 +163,8 @@ def authentifier_distant(hote, port, cle, identifiant, mot_de_passe):
         url, data=corps, method="POST",
         headers={"Content-Type": "application/json", "X-Cle": cle or ""})
     try:
-        with urllib.request.urlopen(requete, timeout=15) as reponse:
+        with urllib.request.urlopen(requete, timeout=15,
+                                    context=_contexte_ssl()) as reponse:
             return json.loads(reponse.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         if e.code == 403:
@@ -159,10 +179,11 @@ def authentifier_distant(hote, port, cle, identifiant, mot_de_passe):
 
 def tester_connexion(hote, port, cle):
     """Teste la connexion au serveur. Renvoie (True, message) ou (False, message)."""
-    url = f"http://{hote}:{port}/ping"
+    url = f"https://{hote}:{port}/ping"
     try:
         requete = urllib.request.Request(url, headers={"X-Cle": cle or ""})
-        with urllib.request.urlopen(requete, timeout=8) as reponse:
+        with urllib.request.urlopen(requete, timeout=8,
+                                    context=_contexte_ssl()) as reponse:
             donnees = json.loads(reponse.read().decode("utf-8"))
         if donnees.get("ok"):
             return True, "Connexion au serveur réussie."

@@ -22,12 +22,14 @@ sont déjà chiffrés dans la base. À utiliser sur un réseau local de confianc
 """
 
 import json
+import ssl
 import sqlite3
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import config
 import reseau
+import tls
 
 
 _verrou = threading.Lock()
@@ -182,13 +184,18 @@ def demarrer_serveur():
         return True, "Le serveur tourne déjà."
     try:
         _serveur = ThreadingHTTPServer(("0.0.0.0", reseau.port()), _Handler)
+        cert, cle_privee = tls.obtenir_certificat()
+        contexte = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        contexte.load_cert_chain(certfile=cert, keyfile=cle_privee)
+        _serveur.socket = contexte.wrap_socket(_serveur.socket, server_side=True)
     except OSError as e:
         return False, (f"Impossible de démarrer le serveur sur le port "
                        f"{reseau.port()} : {e}. Ce port est peut-être déjà utilisé.")
     _thread = threading.Thread(target=_serveur.serve_forever, daemon=True)
     _thread.start()
-    return True, (f"Serveur démarré sur le port {reseau.port()}. "
-                  f"Adresse à donner aux autres postes : {reseau.adresse_ip_locale()}")
+    return True, (f"Serveur démarré sur le port {reseau.port()} (connexion "
+                  f"chiffrée HTTPS). Adresse à donner aux autres postes : "
+                  f"{reseau.adresse_ip_locale()}")
 
 
 def arreter_serveur():

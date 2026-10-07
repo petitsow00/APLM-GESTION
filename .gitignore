@@ -24,3 +24,7 @@ desktop.ini
 
 # --- Secret reseau (cle partagee du mode serveur/client) ---
 data/reseau.json
+
+# --- Certificat HTTPS du serveur (cle privee - jamais a partager) ---
+data/serveur_cert.pem
+data/serveur_cle.pem

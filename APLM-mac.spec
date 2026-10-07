@@ -8,7 +8,7 @@ from PyInstaller.utils.hooks import collect_all
 datas = []
 binaries = []
 hiddenimports = [
-    'auth', 'reseau', 'db_client', 'db_serveur', 'sauvegarde',
+    'auth', 'reseau', 'db_client', 'db_serveur', 'tls', 'sauvegarde',
     'comptabilite', 'pdf_comptabilite', 'pdf_listes', 'pdf_receipt',
     'database', 'settings', 'config', 'i18n', 'utils',
     'ui.app', 'ui.dashboard_view', 'ui.clients_view', 'ui.dossiers_view',
@@ -26,7 +26,8 @@ hiddenimports = [
     'ui.paiements_view', 'ui.banque_view', 'ui.rapports_view',
     'ui.recherche_view',
 ]
-for _pkg in ('customtkinter', 'tkcalendar', 'babel', 'fpdf2', 'darkdetect'):
+for _pkg in ('customtkinter', 'tkcalendar', 'babel', 'fpdf2', 'darkdetect',
+             'cryptography'):
     d, b, h = collect_all(_pkg)
     datas += d
     binaries += b

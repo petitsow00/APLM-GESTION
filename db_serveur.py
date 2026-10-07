@@ -52,8 +52,33 @@ def _get_conn():
     return _connexion
 
 
+# Commandes toujours refusées : elles ne servent à rien pour l'application
+# et ne peuvent qu'être utilisées pour nuire (vider/altérer la base entière,
+# lire d'autres fichiers du disque...).
+_MOTS_INTERDITS = ("ATTACH", "DETACH", "VACUUM", "REINDEX")
+
+
+def _valider_sql(sql):
+    """Refuse les requêtes manifestement dangereuses ou "empilées" (plusieurs
+    commandes collées en une seule, technique classique d'injection SQL).
+    Protection minimale : le design actuel (le serveur exécute le SQL que lui
+    envoie le poste client) reste fondé sur la confiance en la clé réseau."""
+    nettoye = (sql or "").strip().rstrip(";")
+    if ";" in nettoye:
+        raise ValueError("Requête refusée : plusieurs commandes à la fois "
+                          "ne sont pas autorisées.")
+    premier_mot = nettoye.split(None, 1)[0].upper() if nettoye else ""
+    if premier_mot in _MOTS_INTERDITS:
+        raise ValueError(f"Commande « {premier_mot} » non autorisée.")
+    if premier_mot == "PRAGMA":
+        minuscule = nettoye.lower()
+        if "table_info" not in minuscule and "foreign_keys" not in minuscule:
+            raise ValueError("Commande PRAGMA non autorisée.")
+
+
 def _executer(sql, params):
     """Exécute une requête sous verrou et renvoie un dictionnaire résultat."""
+    _valider_sql(sql)
     with _verrou:
         conn = _get_conn()
         cur = conn.execute(sql, params)
@@ -112,6 +137,8 @@ class _Handler(BaseHTTPRequestHandler):
             params = requete.get("params", []) or []
             resultat = _executer(sql, params)
             self._repondre(200, resultat)
+        except ValueError as e:
+            self._repondre(400, {"ok": False, "erreur": str(e)})
         except sqlite3.Error as e:
             self._repondre(400, {"ok": False, "erreur": f"SQL : {e}"})
         except Exception as e:

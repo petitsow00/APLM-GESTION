@@ -139,6 +139,8 @@ def initialiser_base():
             role           TEXT NOT NULL DEFAULT 'agent',
             actif          INTEGER NOT NULL DEFAULT 1,
             doit_changer_mdp INTEGER NOT NULL DEFAULT 0,
+            tentatives_echouees INTEGER NOT NULL DEFAULT 0,
+            bloque_jusqu_a TEXT,
             date_creation  TEXT
         )
     """)
@@ -193,6 +195,9 @@ def initialiser_base():
     # Indicateur « doit changer son mot de passe » (pour les bases déjà créées)
     _ajouter_colonne_si_absente(cur, "utilisateurs", "doit_changer_mdp",
                                 "INTEGER NOT NULL DEFAULT 0")
+    _ajouter_colonne_si_absente(cur, "utilisateurs", "tentatives_echouees",
+                                "INTEGER NOT NULL DEFAULT 0")
+    _ajouter_colonne_si_absente(cur, "utilisateurs", "bloque_jusqu_a", "TEXT")
 
     # Permissions détaillées de l'agent (liste de clés séparées par des virgules)
     _ajouter_colonne_si_absente(cur, "utilisateurs", "permissions", "TEXT")
@@ -1304,8 +1309,15 @@ def compter_admins_actifs():
     return n
 
 
+_MAX_TENTATIVES = 5
+_DUREE_BLOCAGE_MINUTES = 15
+
+
 def authentifier(identifiant, mot_de_passe):
     """Vérifie l'identifiant + le mot de passe.
+
+    Bloque le compte pendant quelques minutes après plusieurs mots de passe
+    erronés d'affilée (protection contre les essais répétés / "brute force").
 
     Renvoie un dictionnaire :
       - {"ok": True, "utilisateur": <ligne>} si la connexion réussit
@@ -1317,10 +1329,52 @@ def authentifier(identifiant, mot_de_passe):
     if not utilisateur["actif"]:
         return {"ok": False,
                 "raison": "Ce compte est désactivé. Contactez l'administrateur."}
+    bloque_jusqu_a = utilisateur["bloque_jusqu_a"]
+    if bloque_jusqu_a:
+        try:
+            if datetime.now() < datetime.fromisoformat(bloque_jusqu_a):
+                return {"ok": False,
+                        "raison": f"Trop de mots de passe erronés. Réessayez "
+                                  f"dans {_DUREE_BLOCAGE_MINUTES} minutes."}
+        except ValueError:
+            pass
     if not auth.verifier_mot_de_passe(mot_de_passe, utilisateur["mdp_sel"],
                                       utilisateur["mdp_hash"]):
+        _enregistrer_echec_connexion(utilisateur["id"])
         return {"ok": False, "raison": "Mot de passe incorrect."}
+    _reinitialiser_tentatives_connexion(utilisateur["id"])
     return {"ok": True, "utilisateur": utilisateur}
+
+
+def _enregistrer_echec_connexion(utilisateur_id):
+    """Compte un mot de passe erroné ; bloque le compte si trop de ratés."""
+    conn = get_connexion()
+    ligne = conn.execute(
+        "SELECT tentatives_echouees FROM utilisateurs WHERE id=?",
+        (utilisateur_id,)).fetchone()
+    nb = (ligne["tentatives_echouees"] or 0) + 1
+    if nb >= _MAX_TENTATIVES:
+        from datetime import timedelta
+        jusqu_a = (datetime.now() +
+                   timedelta(minutes=_DUREE_BLOCAGE_MINUTES)).isoformat()
+        conn.execute(
+            "UPDATE utilisateurs SET tentatives_echouees=0, "
+            "bloque_jusqu_a=? WHERE id=?", (jusqu_a, utilisateur_id))
+    else:
+        conn.execute(
+            "UPDATE utilisateurs SET tentatives_echouees=? WHERE id=?",
+            (nb, utilisateur_id))
+    conn.commit()
+    conn.close()
+
+
+def _reinitialiser_tentatives_connexion(utilisateur_id):
+    conn = get_connexion()
+    conn.execute(
+        "UPDATE utilisateurs SET tentatives_echouees=0, bloque_jusqu_a=NULL "
+        "WHERE id=?", (utilisateur_id,))
+    conn.commit()
+    conn.close()
 
 
 # ===========================================================================

@@ -21,3 +21,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# --- Secret reseau (cle partagee du mode serveur/client) ---
+data/reseau.json

@@ -29,9 +29,11 @@ Name: "desktopicon"; Description: "Creer une icone sur le Bureau"; GroupDescript
 
 [Files]
 Source: "C:\Users\Galileo\APLM_Voyages\dist\APLM\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
+Source: "C:\Users\Galileo\APLM_Voyages\Autoriser le serveur (pare-feu).bat"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\APLM BUZNESS COMPANY"; Filename: "{app}\APLM.exe"
+Name: "{autoprograms}\Autoriser le serveur (pare-feu)"; Filename: "{app}\Autoriser le serveur (pare-feu).bat"
 Name: "{autodesktop}\APLM BUZNESS COMPANY"; Filename: "{app}\APLM.exe"; Tasks: desktopicon
 
 [Run]

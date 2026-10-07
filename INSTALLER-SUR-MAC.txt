@@ -1,75 +1,93 @@
 ============================================================
-  APLM BUZNESS COMPANY — INSTALLER SUR MAC (MacBook Air 2013, Intel)
+  APLM BUZNESS COMPANY - INSTALLER SUR MAC
+  (MacBook Air 13" Mid 2013, Intel, macOS Big Sur 11.7)
 ============================================================
 
-Cette application est 100 % Python. Elle est legere et tourne bien
-sur un Mac Intel. Suivez ces 6 etapes dans l'ordre.
+Cette application est 100 % Python : legere, elle tourne bien sur ce Mac.
+Sur Mac, on la lance depuis le code source (il n'y a pas de .exe Mac).
+
+Suivez ces etapes simples, dans l'ordre.
 
 ------------------------------------------------------------
-ETAPE 1 — INSTALLER PYTHON 3.12
+ETAPE 1 - INSTALLER PYTHON 3.12
 ------------------------------------------------------------
 - Allez sur : https://www.python.org/downloads/
 - Telechargez "Python 3.12" -> installeur "macOS 64-bit universal2"
-  (il fonctionne sur votre Mac Intel).
-- Installez-le normalement (Suivant / Continuer).
+  (compatible avec votre Mac Intel).
+- Installez-le normalement (Continuer / Installer).
 
-IMPORTANT : n'utilisez PAS le Python deja present sur le Mac,
-son interface serait bugguee. Utilisez bien celui de python.org.
-
-------------------------------------------------------------
-ETAPE 2 — COPIER LE PROJET SUR LE MAC
-------------------------------------------------------------
-- Copiez le dossier "APLM_Voyages" sur le Mac (cle USB, AirDrop, cloud...).
-- Vous pouvez IGNORER les dossiers "build" et "dist" : ce sont les
-  versions Windows, lourdes et inutiles sur Mac.
+IMPORTANT : utilisez bien le Python de python.org (l'ancien Python du
+systeme a une interface graphique trop vieille).
 
 ------------------------------------------------------------
-ETAPE 3 — INSTALLER LES DEPENDANCES
+ETAPE 2 - COPIER LE DOSSIER SUR LE MAC
 ------------------------------------------------------------
-- Ouvrez l'application "Terminal".
-- Tapez ces commandes (adaptez le chemin du dossier) :
-
-    cd ~/Desktop/APLM_Voyages
-    pip3 install -r requirements.txt
+- Copiez le dossier "APLM_Voyages" sur le Mac (cle USB, AirDrop...).
+- Placez-le par exemple sur le Bureau.
+- Vous pouvez ignorer les dossiers "build" et "dist" (versions Windows).
 
 ------------------------------------------------------------
-ETAPE 4 — COPIER VOS DONNEES (vos clients, dossiers, etc.)
+ETAPE 3 - LANCER L'APPLICATION
 ------------------------------------------------------------
-Depuis Windows, prenez ces 2 fichiers dans :
-    Documents\APLM BUZNESS COMPANY\data\
-    -> aplm.db
-    -> parametres.json
+- Ouvrez le dossier "APLM_Voyages".
+- Double-cliquez sur "Lancer APLM.command".
+  -> La 1re fois, il installe automatiquement les composants
+     (1 a 2 minutes), puis ouvre l'application.
 
-Et copiez-les dans le dossier "data" du projet sur le Mac :
-    APLM_Voyages/data/
+Si macOS bloque au 1er lancement ("developpeur non identifie") :
+   clic droit sur "Lancer APLM.command" -> "Ouvrir" -> "Ouvrir".
 
-REMARQUE : en lancant depuis le code, l'application lit ses donnees
-dans le dossier "data" DU PROJET (et non dans Documents comme sur Windows).
-
-------------------------------------------------------------
-ETAPE 5 — RENDRE LE LANCEUR EXECUTABLE (une seule fois)
-------------------------------------------------------------
-Dans le Terminal, dans le dossier du projet :
-
-    chmod +x "Lancer APLM.command"
+(Si le double-clic ne fait rien : ouvrez le Terminal, tapez  chmod +x
+ suivi d'un espace, glissez le fichier "Lancer APLM.command" dans la
+ fenetre, Entree. Puis re-essayez le double-clic.)
 
 ------------------------------------------------------------
-ETAPE 6 — LANCER L'APPLICATION
+ETAPE 4 - SE CONNECTER
 ------------------------------------------------------------
-- Double-cliquez sur "Lancer APLM.command"
-  (ou, dans le Terminal : python3 main.py)
+Deux cas selon votre besoin :
 
-Si macOS affiche un avertissement de securite au 1er lancement :
-clic droit sur "Lancer APLM.command" -> "Ouvrir" -> "Ouvrir".
+  A) CE MAC REJOINT LE SERVEUR DU BUREAU (recommande)
+     - Sur le PC SERVEUR : ouvrez Reglages reseau, notez l'adresse IP
+       affichee ET la cle secrete affichee (generee automatiquement,
+       propre a cette installation - plus surs qu'une cle identique pour
+       tout le monde).
+     - Sur ce Mac, a l'ecran de connexion, cliquez "Se connecter a un serveur".
+     - Adresse IP du serveur : celle notee sur le PC serveur (ex : 192.168.1.77).
+     - Cle secrete : remplacez la cle proposee par celle notee sur le PC serveur.
+     - Cliquez "Tester" (doit devenir vert) puis "Enregistrer et se connecter".
+     - Entrez votre identifiant et votre mot de passe.
+     -> Le Mac voit alors LES MEMES donnees que les autres postes, y compris
+        les coordonnees de l'agence et le logo (rien a ressaisir).
+
+  B) CE MAC TRAVAILLE SEUL
+     - Au 1er lancement, creez le compte administrateur, puis connectez-vous.
+
+------------------------------------------------------------
+DEUX FACONS D'UTILISER SUR MAC
+------------------------------------------------------------
+  1) SIMPLE (recommande) : double-clic sur "Lancer APLM.command".
+     -> Installe tout seul et ouvre l'application.
+
+  2) VRAIE APP DOUBLE-CLIQUABLE (equivalent de APLM_Setup) :
+     double-clic sur "Construire APLM (Mac).command".
+     -> Fabrique "APLM.app" et la copie sur le Bureau (a faire 1 seule fois).
+        Ensuite, vous lancez le logiciel en double-cliquant sur APLM.app.
+     (1er lancement de APLM.app : clic droit -> Ouvrir -> Ouvrir.)
+
+------------------------------------------------------------
+NOTES
+------------------------------------------------------------
+- Les PDF s'ouvrent automatiquement (via la commande "open" du Mac).
+- Un vrai installateur .dmg se construit aussi sur le Mac (optionnel).
+- Aucune fonctionnalite n'a ete supprimee ; ce sont les memes ecrans.
 
 ============================================================
-  BESOIN D'UNE VRAIE APP .app DOUBLE-CLIQUABLE ?
+  RAPPEL DES INFOS RESEAU (a garder)
 ============================================================
-C'est possible, mais il faut la construire SUR le Mac avec PyInstaller.
-Demandez de l'aide pour cette etape le moment venu.
-
-============================================================
-  RIEN N'A ETE SUPPRIME NI MODIFIE DANS LES FONCTIONNALITES.
-  Les memes ecrans qu'avant : Tableau de bord (avec Benefice),
-  Clients, Dossiers, Historique clients, Historique transactions, Reglages.
+  Adresse IP du serveur : ____________________ (ex : 192.168.1.77)
+  Cle de partage        : ____________________ (visible dans Reglages
+                           reseau SUR LE PC SERVEUR - generee
+                           automatiquement, differente pour chaque
+                           installation)
+  Port                  : 5000
 ============================================================

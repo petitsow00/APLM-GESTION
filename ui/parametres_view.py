@@ -45,6 +45,10 @@ class ParametresView(ctk.CTkFrame):
                                       corner_radius=12)
         zone.pack(fill="both", expand=True, padx=30, pady=(0, 20))
 
+        # Relit la version la plus récente partagée avant d'afficher le
+        # formulaire, pour ne pas écraser par erreur ce qu'un collègue sur
+        # un autre poste (Windows ou Mac) vient d'enregistrer.
+        settings.synchroniser()
         params = settings.charger()
         definitions = [
             ("nom",       t("champ_nom_agence")),
@@ -117,7 +121,13 @@ class ParametresView(ctk.CTkFrame):
         valeurs = {cle: e.get().strip() for cle, e in self._champs.items()}
         if not valeurs.get("devise"):
             valeurs["devise"] = "FCFA"
-        settings.sauvegarder(valeurs)
+        try:
+            settings.sauvegarder(valeurs)
+        except Exception as e:
+            erreur("Erreur", "Impossible d'enregistrer les réglages : la base "
+                             "partagée est injoignable (vérifiez la connexion "
+                             f"réseau ou le serveur).\n\nDétail : {e}")
+            return
         info(t("menu_parametres"), t("msg_param_ok"))
         if self.on_enregistre:
             self.on_enregistre()

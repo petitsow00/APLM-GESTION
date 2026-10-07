@@ -1,10 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
+# ============================================================
+#  Recette PyInstaller pour construire APLM.app SUR macOS.
+#  (A utiliser via le fichier "Construire APLM (Mac).command".)
+# ============================================================
 from PyInstaller.utils.hooks import collect_all
 
 datas = []
 binaries = []
-# Modules internes de l'application (par sécurité, pour qu'ils soient
-# TOUJOURS embarqués dans le .exe, y compris ceux importés "à la demande").
 hiddenimports = [
     'auth', 'reseau', 'db_client', 'db_serveur', 'sauvegarde',
     'comptabilite', 'pdf_comptabilite', 'pdf_listes', 'pdf_receipt',
@@ -15,23 +17,20 @@ hiddenimports = [
     'ui.utilisateurs_view', 'ui.journal_view', 'ui.depenses_view',
     'ui.comptabilite_view', 'ui.reseau_view', 'ui.helpers',
     'ui.avoirs_view',
-    # --- Réorganisation 2026 : nouveaux modules ---
+    # --- Réorganisation 2026 : nouveaux modules (alignés sur APLM.spec,
+    # la recette Windows - manquaient ici, ce qui aurait fait planter ou
+    # manquer des écrans entiers une fois l'app Mac construite). ---
     'activites', 'banque', 'documents', 'recherche', 'rapports',
     'pdf_operation',
     'ui.activite_view', 'ui.operation_dialog', 'ui.documents_dialog',
     'ui.paiements_view', 'ui.banque_view', 'ui.rapports_view',
     'ui.recherche_view',
 ]
-tmp_ret = collect_all('customtkinter')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('tkcalendar')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('babel')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('fpdf2')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('darkdetect')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+for _pkg in ('customtkinter', 'tkcalendar', 'babel', 'fpdf2', 'darkdetect'):
+    d, b, h = collect_all(_pkg)
+    datas += d
+    binaries += b
+    hiddenimports += h
 
 
 a = Analysis(
@@ -58,7 +57,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
@@ -71,7 +70,21 @@ coll = COLLECT(
     a.binaries,
     a.datas,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     name='APLM',
+)
+
+# Le point important pour Mac : creer un vrai APLM.app double-cliquable.
+app = BUNDLE(
+    coll,
+    name='APLM.app',
+    icon=None,
+    bundle_identifier='com.aplm.gestionvoyage',
+    info_plist={
+        'NSHighResolutionCapable': 'True',
+        'LSMinimumSystemVersion': '10.13',
+        'CFBundleDisplayName': 'APLM BUZNESS COMPANY',
+        'CFBundleName': 'APLM',
+    },
 )

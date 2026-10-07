@@ -1322,7 +1322,19 @@ def authentifier(identifiant, mot_de_passe):
     Renvoie un dictionnaire :
       - {"ok": True, "utilisateur": <ligne>} si la connexion réussit
       - {"ok": False, "raison": "<message>"} sinon
+
+    En mode « client » (poste agent), la vérification se fait TOUJOURS sur le
+    serveur (voir db_serveur._gerer_connexion) : le mot de passe chiffré
+    (hash) de l'utilisateur ne quitte jamais le serveur et ne circule donc
+    jamais sur le réseau local.
     """
+    import reseau
+    if reseau.est_client():
+        import db_client
+        return db_client.authentifier_distant(
+            reseau.hote(), reseau.port(), reseau.cle(),
+            identifiant, mot_de_passe)
+
     utilisateur = get_utilisateur_par_identifiant(identifiant)
     if utilisateur is None:
         return {"ok": False, "raison": "Identifiant inconnu."}

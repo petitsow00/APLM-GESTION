@@ -21,7 +21,7 @@ set PORT=5000
 echo.
 echo Autorisation du port %PORT% (TCP) dans le pare-feu Windows...
 netsh advfirewall firewall delete rule name="APLM BUZNESS COMPANY - Serveur" >nul 2>&1
-netsh advfirewall firewall add rule name="APLM BUZNESS COMPANY - Serveur" dir=in action=allow protocol=TCP localport=%PORT%
+netsh advfirewall firewall add rule name="APLM BUZNESS COMPANY - Serveur" dir=in action=allow protocol=TCP localport=%PORT% profile=private,domain
 
 echo.
 echo ============================================================

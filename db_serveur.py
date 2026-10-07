@@ -125,6 +125,8 @@ class _Handler(BaseHTTPRequestHandler):
         self._repondre(404, {"ok": False, "erreur": "Adresse inconnue."})
 
     def do_POST(self):
+        if self.path == "/connexion":
+            return self._gerer_connexion()
         if self.path != "/sql":
             return self._repondre(404, {"ok": False, "erreur": "Adresse inconnue."})
         if not self._cle_ok():
@@ -143,6 +145,33 @@ class _Handler(BaseHTTPRequestHandler):
             self._repondre(400, {"ok": False, "erreur": f"SQL : {e}"})
         except Exception as e:
             self._repondre(500, {"ok": False, "erreur": str(e)})
+
+    def _gerer_connexion(self):
+        """Vérifie identifiant + mot de passe SUR LE SERVEUR : le mot de
+        passe chiffré (hash) d'un compte ne part jamais vers le réseau,
+        seul le résultat (oui/non + infos du compte) est renvoyé."""
+        if not self._cle_ok():
+            return self._repondre(403, {"ok": False, "erreur": "Clé incorrecte."})
+        try:
+            longueur = int(self.headers.get("Content-Length", 0))
+            corps = self.rfile.read(longueur)
+            requete = json.loads(corps.decode("utf-8"))
+            identifiant = requete.get("identifiant", "")
+            mot_de_passe = requete.get("mot_de_passe", "")
+        except Exception as e:
+            return self._repondre(400, {"ok": False, "erreur": str(e)})
+
+        import database
+        resultat = database.authentifier(identifiant, mot_de_passe)
+        if not resultat.get("ok"):
+            return self._repondre(200, {"ok": False,
+                                        "raison": resultat.get("raison", "Erreur.")})
+        u = resultat["utilisateur"]
+        # On ne renvoie JAMAIS mdp_sel/mdp_hash ni les compteurs de blocage.
+        utilisateur_public = {k: u[k] for k in u.keys()
+                              if k not in ("mdp_sel", "mdp_hash",
+                                           "tentatives_echouees", "bloque_jusqu_a")}
+        return self._repondre(200, {"ok": True, "utilisateur": utilisateur_public})
 
 
 def demarrer_serveur():

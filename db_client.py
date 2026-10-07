@@ -127,6 +127,36 @@ class ConnexionDistante:
         return donnees
 
 
+def authentifier_distant(hote, port, cle, identifiant, mot_de_passe):
+    """Demande au SERVEUR de vérifier l'identifiant + le mot de passe.
+
+    Sécurité : seul le résultat (oui/non + infos du compte, SANS le mot de
+    passe chiffré) revient par le réseau. Le "hash" du mot de passe ne quitte
+    jamais le serveur.
+    Renvoie {"ok": True, "utilisateur": {...}} ou {"ok": False, "raison": "..."}.
+    """
+    url = f"http://{hote}:{port}/connexion"
+    corps = json.dumps({
+        "identifiant": identifiant,
+        "mot_de_passe": mot_de_passe,
+    }).encode("utf-8")
+    requete = urllib.request.Request(
+        url, data=corps, method="POST",
+        headers={"Content-Type": "application/json", "X-Cle": cle or ""})
+    try:
+        with urllib.request.urlopen(requete, timeout=15) as reponse:
+            return json.loads(reponse.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        if e.code == 403:
+            return {"ok": False, "raison": "Clé réseau incorrecte."}
+        return {"ok": False, "raison": f"Erreur du serveur : {e}"}
+    except urllib.error.URLError as e:
+        return {"ok": False,
+                "raison": "Impossible de joindre le serveur. Vérifiez qu'il "
+                          f"est allumé et que l'adresse IP / le port sont "
+                          f"corrects.\nDétail : {e.reason}"}
+
+
 def tester_connexion(hote, port, cle):
     """Teste la connexion au serveur. Renvoie (True, message) ou (False, message)."""
     url = f"http://{hote}:{port}/ping"

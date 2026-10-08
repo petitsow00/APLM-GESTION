@@ -45,6 +45,9 @@ class ActiviteView(ctk.CTkFrame):
     ACTIVITE = "billet"
     TITRE = "Activité"
     COL_DETAIL = "Détail"
+    # True -> le formulaire affiche juste "FRAIS / MARGE" (prix de vente -
+    # prix fournisseur) au lieu du bandeau complet Total/Marge/TVA.
+    BANDEAU_SIMPLE = False
 
     def champs(self):
         raise NotImplementedError
@@ -132,7 +135,7 @@ class ActiviteView(ctk.CTkFrame):
 
     def ajouter(self):
         dlg = OperationDialog(self.winfo_toplevel(), "Nouveau — " + self.TITRE,
-                              self.champs())
+                              self.champs(), bandeau_simple=self.BANDEAU_SIMPLE)
         if dlg.resultat is None:
             return
         act.creer_operation(self.ACTIVITE, dlg.resultat["client_id"],
@@ -149,7 +152,8 @@ class ActiviteView(ctk.CTkFrame):
         nom = f'{c["nom"]} {c["prenom"] or ""}'.strip() if c else "?"
         dlg = OperationDialog(self.winfo_toplevel(), "Modifier — " + self.TITRE,
                               self.champs(), valeurs=valeurs,
-                              client_fixe=(o["client_id"], nom))
+                              client_fixe=(o["client_id"], nom),
+                              bandeau_simple=self.BANDEAU_SIMPLE)
         if dlg.resultat is None:
             return
         act.modifier_operation(self.ACTIVITE, oid, dlg.resultat["donnees"])
@@ -221,38 +225,24 @@ class ActiviteView(ctk.CTkFrame):
 class BilletsView(ActiviteView):
     ACTIVITE = "billet"
     TITRE = "✈️  Billets"
-    COL_DETAIL = "Trajet"
+    COL_DETAIL = "Compagnie / Destination"
+    BANDEAU_SIMPLE = True  # bandeau "FRAIS / MARGE" au lieu de Total/Marge/TVA
 
     def detail(self, o):
-        return f'{o["ville_depart"] or "?"}→{o["ville_arrivee"] or "?"}'
+        return f'{o["compagnie"] or "?"} · {o["ville_arrivee"] or "?"}'
 
     def champs(self):
+        # Formulaire volontairement réduit à l'essentiel (demande du 2026-10-08) :
+        # Nom/Prénom sont déjà saisis dans la zone "Client" au-dessus.
         return [
-            {"cle": "type_billet", "label": "Type de billet", "type": "liste",
-             "options": ["Aller-retour", "Aller simple", "Multi-destinations"]},
-            {"cle": "passager", "label": "Passager", "type": "texte"},
-            {"cle": "statut", "label": "Statut", "type": "liste",
-             "options": ["En attente", "Confirmée", "Émise", "Annulée"]},
             {"cle": "pnr", "label": "PNR", "type": "texte"},
             {"cle": "compagnie", "label": "Compagnie aérienne", "type": "texte"},
             {"cle": "num_billet", "label": "Numéro de billet", "type": "texte"},
-            {"cle": "classe", "label": "Classe", "type": "liste",
-             "options": config.CLASSES_VOYAGE},
-            {"cle": "date_reservation", "label": "Date de réservation", "type": "date"},
-            {"cle": "date_limite_emission", "label": "Date limite d'émission (OPC)",
-             "type": "date"},
-            {"cle": "ville_depart", "label": "Ville de départ", "type": "texte"},
-            {"cle": "date_depart", "label": "Date de départ", "type": "date"},
-            {"cle": "ville_arrivee", "label": "Ville d'arrivée", "type": "texte"},
-            {"cle": "num_vol_aller", "label": "N° de vol (aller)", "type": "texte"},
-            {"cle": "date_retour", "label": "Date de retour", "type": "date"},
-            {"cle": "num_vol_retour", "label": "N° de vol (retour)", "type": "texte"},
-            {"cle": "bagage_soute", "label": "Bagage en soute", "type": "texte"},
-            {"cle": "gds", "label": "GDS (interne)", "type": "liste",
-             "options": [""] + config.GDS},
-            {"cle": "consolidateur", "label": "Consolidateur (interne)", "type": "liste",
-             "options": [""] + config.CONSOLIDATEURS},
-        ] + champs_finances()
+            {"cle": "ville_arrivee", "label": "Destination", "type": "texte"},
+            {"cle": "prix_fournisseur", "label": "Prix fournisseur (FCFA)",
+             "type": "nombre"},
+            {"cle": "prix_client", "label": "Prix de vente (FCFA)", "type": "nombre"},
+        ]
 
 
 class HotelsView(ActiviteView):

@@ -28,13 +28,17 @@ def _designation(activite, o):
         for cle in ("type_billet", "compagnie"):
             if o[cle]:
                 parts.append(o[cle])
-        if o["ville_depart"] or o["ville_arrivee"]:
-            parts.append(f'{o["ville_depart"] or "?"} -> {o["ville_arrivee"] or "?"}')
+        if o["ville_depart"] and o["ville_arrivee"]:
+            parts.append(f'{o["ville_depart"]} -> {o["ville_arrivee"]}')
+        elif o["ville_arrivee"]:
+            parts.append("Destination: " + o["ville_arrivee"])
         dates = [d for d in (o["date_depart"], o["date_retour"]) if d]
         if dates:
             parts.append("(" + " - ".join(dates) + ")")
         if o["pnr"]:
             parts.append("PNR: " + o["pnr"])
+        if o["num_billet"]:
+            parts.append("N. billet: " + o["num_billet"])
     elif activite == "hotel":
         if o["nom_hotel"]:
             parts.append(o["nom_hotel"])

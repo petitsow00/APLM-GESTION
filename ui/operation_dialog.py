@@ -21,6 +21,7 @@ import tkinter as tk
 from tkinter import ttk
 import customtkinter as ctk
 
+import config
 import database as db
 import activites as act
 from ui.helpers import COULEURS, erreur, info, CALENDRIER_DISPO
@@ -43,13 +44,17 @@ def formater(montant):
 
 
 class OperationDialog(ctk.CTkToplevel):
-    def __init__(self, parent, titre, champs, valeurs=None, client_fixe=None):
+    def __init__(self, parent, titre, champs, valeurs=None, client_fixe=None,
+                bandeau_simple=False):
         super().__init__(parent)
         self.title(titre)
         self.resultat = None
         self._champs = champs
         self._widgets = {}
         self._valeurs = valeurs or {}
+        # True -> bandeau "FRAIS / MARGE" (prix de vente - prix fournisseur)
+        # au lieu du bandeau complet Total client / Marge / TVA.
+        self._bandeau_simple = bandeau_simple
         # client_fixe = (id, "Nom Prénom") -> zone client verrouillée (modification)
         self._client_fixe = client_fixe
         self.client_id = client_fixe[0] if client_fixe else None
@@ -250,6 +255,13 @@ class OperationDialog(ctk.CTkToplevel):
             return 0
 
     def _maj_totaux(self):
+        if self._bandeau_simple:
+            marge = self._nombre("prix_client") - self._nombre("prix_fournisseur")
+            couleur = "#ffb3b3" if marge < 0 else "white"
+            self.lbl_totaux.configure(
+                text=f"FRAIS / MARGE : {formater(marge)} {config.DEVISE}",
+                text_color=couleur)
+            return
         t = act.calc_totaux(
             prix_client=self._nombre("prix_client"),
             frais_service=self._nombre("frais_service"),
@@ -260,7 +272,8 @@ class OperationDialog(ctk.CTkToplevel):
         self.lbl_totaux.configure(
             text=(f"TOTAL CLIENT : {formater(t['total_client'])}   |   "
                   f"MARGE : {formater(t['marge'])}   |   "
-                  f"TVA : {formater(t['montant_tva'])}"))
+                  f"TVA : {formater(t['montant_tva'])}"),
+            text_color="white")
 
     # ------------------------------------------------------------------ #
     #  LECTURE / VALIDATION

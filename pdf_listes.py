@@ -179,7 +179,76 @@ def generer_liste_clients(ouvrir=False):
 
 
 # ===========================================================================
-#  2) HISTORIQUE DES TRANSACTIONS D'UNE PÉRIODE
+#  2) LISTE DES CLIENTS QUI ONT UN BILLET (rubrique Billets)
+# ===========================================================================
+def generer_liste_clients_billets(ouvrir=False):
+    """Génère le PDF « Liste des clients qui ont un billet »
+    (Nom, Prénom, Téléphone, PNR, Prix de vente) et renvoie le chemin."""
+    import activites as act
+    lignes = act.lister_clients_billets()
+
+    pdf = DocumentPDF(orientation="P", unit="mm", format="A4")
+    pdf._sous_titre = "LISTE DES CLIENTS AVEC BILLET"
+    pdf.set_auto_page_break(auto=True, margin=18)
+    pdf.set_margins(12, 12, 12)
+    pdf.add_page()
+
+    _ligne_date_generation(pdf)
+
+    # Largeurs des colonnes (total = 186 mm sur A4 portrait avec marges de 12)
+    largeurs = {"nom": 45, "prenom": 40, "tel": 33, "pnr": 32, "prix": 36}
+
+    def entete_tableau():
+        pdf.set_font("Helvetica", "B", 9)
+        pdf.set_fill_color(*BLEU)
+        pdf.set_text_color(255, 255, 255)
+        pdf.cell(largeurs["nom"],    8, "  Nom", fill=True)
+        pdf.cell(largeurs["prenom"], 8, "Prenom", fill=True)
+        pdf.cell(largeurs["tel"],   8, "Telephone", fill=True)
+        pdf.cell(largeurs["pnr"],   8, "PNR", fill=True)
+        pdf.cell(largeurs["prix"],  8, "Prix de vente", fill=True, align="R", ln=1)
+
+    entete_tableau()
+
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_font("Helvetica", "", 9)
+    alterne = False
+    for l in lignes:
+        if pdf.get_y() > pdf.h - 25:
+            pdf.add_page()
+            entete_tableau()
+            pdf.set_text_color(0, 0, 0)
+            pdf.set_font("Helvetica", "", 9)
+
+        pdf.set_fill_color(245, 245, 245) if alterne else pdf.set_fill_color(255, 255, 255)
+        alterne = not alterne
+
+        pdf.cell(largeurs["nom"],    7, "  " + (l["nom"] or "")[:24], border="B", fill=True)
+        pdf.cell(largeurs["prenom"], 7, (l["prenom"] or "")[:20], border="B", fill=True)
+        pdf.cell(largeurs["tel"],   7, (l["telephone"] or "")[:18], border="B", fill=True)
+        pdf.cell(largeurs["pnr"],   7, (l["pnr"] or "")[:16], border="B", fill=True)
+        pdf.cell(largeurs["prix"],  7, formater_montant(l["prix_vente"]), border="B",
+                fill=True, align="R", ln=1)
+
+    if not lignes:
+        pdf.cell(0, 8, "  (Aucun client avec billet)", ln=1)
+
+    pdf.ln(4)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(*BLEU)
+    pdf.cell(0, 7, f"Total billets : {len(lignes)}", ln=1)
+
+    nom_fichier = "Liste_clients_billets_" + datetime.now().strftime("%Y-%m-%d") + ".pdf"
+    chemin = os.path.join(config.RECUS_DIR, nom_fichier)
+    pdf.output(chemin)
+
+    if ouvrir:
+        ouvrir_fichier(chemin)
+    return chemin
+
+
+# ===========================================================================
+#  3) HISTORIQUE DES TRANSACTIONS D'UNE PÉRIODE
 # ===========================================================================
 def generer_historique_transactions(date_debut, date_fin, ouvrir=False):
     """Génère le PDF de l'historique des transactions entre deux dates."""

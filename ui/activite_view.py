@@ -55,6 +55,12 @@ class ActiviteView(ctk.CTkFrame):
     def detail(self, o):
         return ""
 
+    def _boutons_supplementaires(self, barre):
+        """Point d'extension : une sous-classe peut ajouter un bouton
+        supplémentaire dans la barre d'actions (ex: BilletsView), sans rien
+        changer pour les autres activités (ne fait rien par défaut)."""
+        pass
+
     # ---------------------------------------------------------------- #
     def __init__(self, parent, on_changement=None):
         super().__init__(parent, fg_color=COULEURS["fond"])
@@ -90,6 +96,7 @@ class ActiviteView(ctk.CTkFrame):
         ctk.CTkButton(barre, text="Supprimer", fg_color=COULEURS["rouge"],
                       hover_color="#922b21", width=95,
                       command=self.supprimer).pack(side="right", padx=(6, 0))
+        self._boutons_supplementaires(barre)
 
         cadre = ctk.CTkFrame(self, fg_color=COULEURS["carte"], corner_radius=10)
         cadre.pack(fill="both", expand=True, padx=30, pady=(0, 24))
@@ -243,6 +250,83 @@ class BilletsView(ActiviteView):
              "type": "nombre"},
             {"cle": "prix_client", "label": "Prix de vente (FCFA)", "type": "nombre"},
         ]
+
+    # --- Rubrique « Liste des clients qui ont un billet » (2026-10-08) ---
+    def _boutons_supplementaires(self, barre):
+        ctk.CTkButton(barre, text="📋 Clients billet", fg_color=COULEURS["primaire2"],
+                      width=150, command=self.liste_clients_billets).pack(
+                          side="right", padx=(6, 0))
+
+    def liste_clients_billets(self):
+        _DialogueClientsBillets(self.winfo_toplevel())
+
+
+class _DialogueClientsBillets(ctk.CTkToplevel):
+    """Rubrique « Liste des clients qui ont un billet » (2026-10-08) :
+    Nom, Prénom, Téléphone, PNR, Prix de vente — un billet par ligne."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("Clients avec billet")
+        self.configure(fg_color=COULEURS["fond"])
+        self.geometry("700x520")
+
+        ctk.CTkLabel(self, text="📋  Clients qui ont un billet",
+                     font=ctk.CTkFont(size=18, weight="bold"),
+                     text_color=COULEURS["primaire"]).pack(
+                         anchor="w", padx=20, pady=(16, 10))
+
+        cadre = ctk.CTkFrame(self, fg_color=COULEURS["carte"], corner_radius=10)
+        cadre.pack(fill="both", expand=True, padx=20, pady=(0, 10))
+
+        cols = ("nom", "prenom", "telephone", "pnr", "prix_vente")
+        entetes = {"nom": "Nom", "prenom": "Prénom", "telephone": "Téléphone",
+                   "pnr": "PNR", "prix_vente": "Prix de vente"}
+        largeurs = {"nom": 140, "prenom": 120, "telephone": 120,
+                    "pnr": 110, "prix_vente": 120}
+        self.tableau = ttk.Treeview(cadre, columns=cols, show="headings",
+                                    selectmode="browse")
+        for c in cols:
+            self.tableau.heading(c, text=entetes[c])
+            self.tableau.column(c, width=largeurs[c],
+                                anchor="e" if c == "prix_vente" else "w")
+        scroll = ttk.Scrollbar(cadre, orient="vertical", command=self.tableau.yview)
+        self.tableau.configure(yscrollcommand=scroll.set)
+        self.tableau.pack(side="left", fill="both", expand=True, padx=(10, 0), pady=10)
+        scroll.pack(side="right", fill="y", pady=10, padx=(0, 10))
+
+        lignes = act.lister_clients_billets()
+        for l in lignes:
+            self.tableau.insert("", "end", values=(
+                l["nom"] or "", l["prenom"] or "", l["telephone"] or "",
+                l["pnr"] or "", formater(l["prix_vente"])))
+
+        bas = ctk.CTkFrame(self, fg_color="transparent")
+        bas.pack(fill="x", padx=20, pady=(0, 16))
+        ctk.CTkLabel(bas, text=f"Total : {len(lignes)} billet(s)",
+                     text_color=COULEURS["gris"]).pack(side="left")
+        ctk.CTkButton(bas, text="📄 Générer PDF", fg_color=COULEURS["vert"],
+                      hover_color="#166638", width=160,
+                      command=self._generer_pdf).pack(side="right")
+        ctk.CTkButton(bas, text="Fermer", fg_color=COULEURS["gris"],
+                      hover_color="#555", width=100,
+                      command=self.destroy).pack(side="right", padx=(0, 8))
+
+        self.transient(parent)
+        self.grab_set()
+
+    def _generer_pdf(self):
+        import settings
+        if not settings.est_configure():
+            erreur("Réglages", "Renseignez d'abord le nom de l'agence dans "
+                   "l'écran Réglages avant de générer ce PDF.")
+            return
+        try:
+            import pdf_listes
+            chemin = pdf_listes.generer_liste_clients_billets(ouvrir=True)
+            info("PDF", f"PDF généré :\n{chemin}")
+        except Exception as e:
+            erreur("Erreur", f"Impossible de générer le PDF :\n{e}")
 
 
 class HotelsView(ActiviteView):

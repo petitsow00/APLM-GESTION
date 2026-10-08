@@ -363,6 +363,20 @@ def lister_operations(activite, recherche="", client_id=None):
     return lignes
 
 
+def lister_clients_billets():
+    """Rubrique Billets : « Liste des clients qui ont un billet »
+    (Nom, Prénom, Téléphone, PNR, Prix de vente) — un billet par ligne."""
+    conn = db.get_connexion()
+    lignes = conn.execute("""
+        SELECT c.nom AS nom, c.prenom AS prenom, c.telephone AS telephone,
+               b.pnr AS pnr, b.prix_client AS prix_vente
+        FROM billets b JOIN clients c ON c.id = b.client_id
+        ORDER BY c.nom, c.prenom
+    """).fetchall()
+    conn.close()
+    return lignes
+
+
 def lister_operations_client(client_id):
     """HISTORIQUE CLIENT (§2) : toutes les opérations d'un client, toutes
     activités confondues, avec leur total calculé. Liste de dicts simples."""

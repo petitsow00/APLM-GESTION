@@ -59,6 +59,12 @@ TXT_FRAIS_NON_REMBOURSABLE = (
     "Je reconnais que, quelle que soit l'issue de ma demande, les frais "
     "de dossier ne sont pas remboursables."
 )
+TXT_PAIEMENT_EN_LIGNE = (
+    "Lorsque les frais de visa sont payables en ligne (notamment pour le "
+    "Canada), le demandeur peut soit effectuer lui-meme ce paiement en "
+    f"ligne, soit remettre les fonds necessaires a {NOM_SOCIETE_LEGAL} "
+    "pour que l'agence effectue ce paiement en son nom."
+)
 TXT_ENGAGEMENT_1 = (
     "Je m'engage a fournir des informations exactes, completes et "
     "sinceres ainsi que des documents authentiques."
@@ -150,7 +156,8 @@ def donnees_engagement(operation_id):
         "frais_assistance_txt": _montant_ou_non_renseigne(o["frais_service"]),
         "frais_visa_txt": _montant_ou_non_renseigne(o["prix_fournisseur"]),
         "mode_paiement_txt": mode or "Non renseigné",
-        "case_en_ligne": "[X]" if mode == "Paiement en ligne" else "[ ]",
+        "case_en_ligne_demandeur": "[X]" if mode == "Paiement en ligne par le demandeur" else "[ ]",
+        "case_en_ligne_agence": "[X]" if mode == "Paiement en ligne par l'agence" else "[ ]",
         "case_lieu_depot": "[X]" if mode == "Paiement sur le lieu de dépôt" else "[ ]",
         "case_a_confirmer": "[X]" if mode == "À confirmer" else "[ ]",
     }
@@ -223,10 +230,12 @@ def generer_engagement_visa(operation_id, ouvrir=False):
     ligne(f'Frais de visa : {d["frais_visa_txt"]}')
     pdf.ln(1)
     ligne("Mode de paiement des frais de visa :")
-    ligne(f'   {d["case_en_ligne"]}  Paiement en ligne')
+    ligne(f'   {d["case_en_ligne_demandeur"]}  Paiement en ligne par le demandeur')
+    ligne(f'   {d["case_en_ligne_agence"]}  Paiement en ligne par l\'agence')
     ligne(f'   {d["case_lieu_depot"]}  Paiement sur le lieu de dépôt')
     ligne(f'   {d["case_a_confirmer"]}  À confirmer')
     pdf.ln(1)
+    paragraphe(TXT_PAIEMENT_EN_LIGNE)
     paragraphe(TXT_FRAIS_DISTINCTS)
     paragraphe(TXT_FRAIS_NATURE)
     paragraphe(TXT_FRAIS_NON_REMBOURSABLE)

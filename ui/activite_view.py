@@ -441,8 +441,12 @@ class VisasView(ActiviteView):
             # d'assistance APLM = "Frais de service" ci-dessus.
             {"cle": "mode_paiement_visa", "label": "Mode de paiement des frais de visa",
              "type": "liste",
-             "options": ["", "Paiement en ligne", "Paiement sur le lieu de dépôt",
-                         "À confirmer"]},
+             # 2 variantes "en ligne" (ex: Canada) : le demandeur peut payer
+             # lui-même en ligne, OU remettre les fonds à l'agence qui paie
+             # en ligne à sa place.
+             "options": ["", "Paiement en ligne par le demandeur",
+                         "Paiement en ligne par l'agence",
+                         "Paiement sur le lieu de dépôt", "À confirmer"]},
         ]
 
     # --- Engagement Assistance Visa (2026-10-08) ---
@@ -543,9 +547,11 @@ class _DialogueApercuEngagement(ctk.CTkToplevel):
             f"  Frais d'assistance APLM : {d['frais_assistance_txt']}\n"
             f"  Frais de visa : {d['frais_visa_txt']}\n"
             "  Mode de paiement des frais de visa :\n"
-            f"     {d['case_en_ligne']} Paiement en ligne\n"
+            f"     {d['case_en_ligne_demandeur']} Paiement en ligne par le demandeur\n"
+            f"     {d['case_en_ligne_agence']} Paiement en ligne par l'agence\n"
             f"     {d['case_lieu_depot']} Paiement sur le lieu de dépôt\n"
             f"     {d['case_a_confirmer']} À confirmer\n\n"
+            f"{peng.TXT_PAIEMENT_EN_LIGNE}\n\n"
             f"{peng.TXT_FRAIS_DISTINCTS}\n\n"
             f"{peng.TXT_FRAIS_NATURE}\n\n"
             f"{peng.TXT_FRAIS_NON_REMBOURSABLE}\n\n"

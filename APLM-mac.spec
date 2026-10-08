@@ -21,7 +21,7 @@ hiddenimports = [
     # la recette Windows - manquaient ici, ce qui aurait fait planter ou
     # manquer des écrans entiers une fois l'app Mac construite). ---
     'activites', 'banque', 'documents', 'recherche', 'rapports',
-    'pdf_operation',
+    'pdf_operation', 'pdf_engagement_visa',
     'ui.activite_view', 'ui.operation_dialog', 'ui.documents_dialog',
     'ui.paiements_view', 'ui.banque_view', 'ui.rapports_view',
     'ui.recherche_view',

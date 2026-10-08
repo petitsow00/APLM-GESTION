@@ -17,7 +17,7 @@ hiddenimports = [
     'ui.avoirs_view',
     # --- Réorganisation 2026 : nouveaux modules ---
     'activites', 'banque', 'documents', 'recherche', 'rapports',
-    'pdf_operation',
+    'pdf_operation', 'pdf_engagement_visa',
     'ui.activite_view', 'ui.operation_dialog', 'ui.documents_dialog',
     'ui.paiements_view', 'ui.banque_view', 'ui.rapports_view',
     'ui.recherche_view',

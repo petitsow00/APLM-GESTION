@@ -434,4 +434,119 @@ class VisasView(ActiviteView):
             {"cle": "nationalite", "label": "Nationalité", "type": "texte"},
             {"cle": "num_passeport", "label": "N° passeport", "type": "texte"},
             {"cle": "date_exp_passeport", "label": "Expiration passeport", "type": "date"},
-        ] + champs_finances()
+        ] + champs_finances() + [
+            # Pour l'engagement Assistance Visa (2026-10-08) : le montant des
+            # frais de visa = "Prix fournisseur" ci-dessus (frais payés à
+            # l'ambassade/au centre, pas gardés par l'agence) ; les frais
+            # d'assistance APLM = "Frais de service" ci-dessus.
+            {"cle": "mode_paiement_visa", "label": "Mode de paiement des frais de visa",
+             "type": "liste",
+             "options": ["", "Paiement en ligne", "Paiement sur le lieu de dépôt",
+                         "À confirmer"]},
+        ]
+
+    # --- Engagement Assistance Visa (2026-10-08) ---
+    # Bandeau pleine largeur, bien visible (même principe que "Clients
+    # billet" dans l'écran Billets) plutôt qu'un bouton perdu dans la barre.
+    def _zone_supplementaire(self, parent):
+        bandeau = ctk.CTkFrame(parent, fg_color=COULEURS["accent"], corner_radius=10)
+        bandeau.pack(fill="x", padx=30, pady=(0, 14))
+        ctk.CTkButton(
+            bandeau, text="📝  GÉNÉRER L'ENGAGEMENT (dossier sélectionné)",
+            fg_color=COULEURS["accent"], hover_color="#1f68b1",
+            text_color="white", font=ctk.CTkFont(size=14, weight="bold"),
+            height=46, corner_radius=10,
+            command=self.generer_engagement).pack(fill="x", padx=4, pady=4)
+
+    def generer_engagement(self):
+        oid = self._id_selectionne()
+        if oid is None:
+            return
+        _DialogueApercuEngagement(self.winfo_toplevel(), oid)
+
+
+class _DialogueApercuEngagement(ctk.CTkToplevel):
+    """Aperçu de l'engagement Assistance Visa AVANT génération définitive
+    (demande du 2026-10-08) : l'agent vérifie les informations — toutes
+    reprises automatiquement du dossier, rien à ressaisir."""
+
+    def __init__(self, parent, operation_id):
+        super().__init__(parent)
+        import pdf_engagement_visa as peng
+        self._peng = peng
+        self._operation_id = operation_id
+
+        self.title("Aperçu de l'engagement — Assistance Visa")
+        self.configure(fg_color=COULEURS["fond"])
+        self.geometry("640x650")
+
+        try:
+            self._d = peng.donnees_engagement(operation_id)
+        except ValueError as e:
+            erreur("Erreur", str(e))
+            self.destroy()
+            return
+
+        ctk.CTkLabel(self, text="📝  Vérifier avant de faire signer",
+                     font=ctk.CTkFont(size=17, weight="bold"),
+                     text_color=COULEURS["primaire"]).pack(
+                         anchor="w", padx=20, pady=(16, 6))
+
+        manquants = [lbl for lbl, val in (
+            ("Frais d'assistance APLM", self._d["frais_assistance_txt"]),
+            ("Frais de visa", self._d["frais_visa_txt"]),
+            ("Mode de paiement des frais de visa", self._d["mode_paiement_txt"]),
+        ) if val == "Non renseigné"]
+        if manquants:
+            ctk.CTkLabel(
+                self,
+                text="⚠️  Non renseigné : " + ", ".join(manquants) + ". "
+                     "Vous pouvez compléter le dossier (bouton Modifier) "
+                     "avant de faire signer le client.",
+                text_color=COULEURS["rouge"],
+                font=ctk.CTkFont(size=12, weight="bold"),
+                wraplength=580, justify="left").pack(
+                    anchor="w", padx=20, pady=(0, 8))
+
+        zone = ctk.CTkTextbox(self, wrap="word")
+        zone.pack(fill="both", expand=True, padx=20, pady=(0, 10))
+        zone.insert("1.0", self._texte_apercu())
+        zone.configure(state="disabled")
+
+        barre = ctk.CTkFrame(self, fg_color="transparent")
+        barre.pack(fill="x", padx=20, pady=(0, 16))
+        ctk.CTkButton(barre, text="Annuler", fg_color=COULEURS["gris"],
+                      hover_color="#555", width=110,
+                      command=self.destroy).pack(side="right", padx=(8, 0))
+        ctk.CTkButton(barre, text="✅ Générer le PDF (à faire signer)",
+                      fg_color=COULEURS["vert"], hover_color="#166638",
+                      width=260, command=self._generer).pack(side="right")
+
+        self.transient(parent)
+        self.grab_set()
+
+    def _texte_apercu(self):
+        d = self._d
+        return (
+            f"CLIENT : {d['nom_complet']}\n\n"
+            f"DOSSIER VISA\n"
+            f"  Pays de destination : {d['pays_destination']}\n"
+            f"  Type de visa : {d['type_visa']}\n"
+            f"  N° de dossier : {d['num_dossier']}\n\n"
+            f"FRAIS\n"
+            f"  Frais d'assistance APLM : {d['frais_assistance_txt']}\n"
+            f"  Frais de visa : {d['frais_visa_txt']}\n"
+            f"  Mode de paiement des frais de visa : {d['mode_paiement_txt']}\n\n"
+            f"{self._peng.MENTION_FRAIS}\n\n"
+            f"{self._peng.MENTION_GARANTIE}\n"
+        )
+
+    def _generer(self):
+        try:
+            chemin = self._peng.generer_engagement_visa(
+                self._operation_id, ouvrir=True)
+            info("Engagement",
+                 f"PDF généré et enregistré dans les documents du dossier :\n{chemin}")
+            self.destroy()
+        except Exception as e:
+            erreur("Erreur", f"Impossible de générer l'engagement :\n{e}")

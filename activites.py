@@ -125,6 +125,11 @@ def initialiser():
         {_fin_commun()}
     )""")
 
+    # Mode de paiement des frais de visa (engagement Assistance Visa, 2026-10-08).
+    # Ajouté en migration (ALTER TABLE) : les dossiers visa existants peuvent
+    # déjà exister dans la base, on ne perd aucune donnée.
+    db._ajouter_colonne_si_absente(cur, "visas", "mode_paiement_visa", "TEXT")
+
     conn.commit()
     conn.close()
 

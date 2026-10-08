@@ -55,10 +55,11 @@ class ActiviteView(ctk.CTkFrame):
     def detail(self, o):
         return ""
 
-    def _boutons_supplementaires(self, barre):
-        """Point d'extension : une sous-classe peut ajouter un bouton
-        supplémentaire dans la barre d'actions (ex: BilletsView), sans rien
-        changer pour les autres activités (ne fait rien par défaut)."""
+    def _zone_supplementaire(self, parent):
+        """Point d'extension : une sous-classe peut ajouter ICI une zone/un
+        bouton bien visible, sur sa propre ligne, sous la barre d'actions
+        (ex: BilletsView). Ne fait rien par défaut (autres activités
+        inchangées)."""
         pass
 
     # ---------------------------------------------------------------- #
@@ -96,7 +97,8 @@ class ActiviteView(ctk.CTkFrame):
         ctk.CTkButton(barre, text="Supprimer", fg_color=COULEURS["rouge"],
                       hover_color="#922b21", width=95,
                       command=self.supprimer).pack(side="right", padx=(6, 0))
-        self._boutons_supplementaires(barre)
+
+        self._zone_supplementaire(self)
 
         cadre = ctk.CTkFrame(self, fg_color=COULEURS["carte"], corner_radius=10)
         cadre.pack(fill="both", expand=True, padx=30, pady=(0, 24))
@@ -252,10 +254,18 @@ class BilletsView(ActiviteView):
         ]
 
     # --- Rubrique « Liste des clients qui ont un billet » (2026-10-08) ---
-    def _boutons_supplementaires(self, barre):
-        ctk.CTkButton(barre, text="📋 Clients billet", fg_color=COULEURS["primaire2"],
-                      width=150, command=self.liste_clients_billets).pack(
-                          side="right", padx=(6, 0))
+    # Sur sa PROPRE ligne, bien visible (demande du 2026-10-08 : le 1er
+    # emplacement, un bouton parmi 6 autres dans la barre d'outils, passait
+    # inaperçu / pouvait sortir de l'écran).
+    def _zone_supplementaire(self, parent):
+        bandeau = ctk.CTkFrame(parent, fg_color=COULEURS["accent"], corner_radius=10)
+        bandeau.pack(fill="x", padx=30, pady=(0, 14))
+        ctk.CTkButton(
+            bandeau, text="📋  VOIR LA LISTE DES CLIENTS QUI ONT UN BILLET",
+            fg_color=COULEURS["accent"], hover_color="#1f68b1",
+            text_color="white", font=ctk.CTkFont(size=14, weight="bold"),
+            height=46, corner_radius=10,
+            command=self.liste_clients_billets).pack(fill="x", padx=4, pady=4)
 
     def liste_clients_billets(self):
         _DialogueClientsBillets(self.winfo_toplevel())

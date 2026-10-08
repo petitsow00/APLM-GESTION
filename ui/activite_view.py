@@ -527,18 +527,31 @@ class _DialogueApercuEngagement(ctk.CTkToplevel):
 
     def _texte_apercu(self):
         d = self._d
+        peng = self._peng
         return (
-            f"CLIENT : {d['nom_complet']}\n\n"
-            f"DOSSIER VISA\n"
+            "ENGAGEMENT CLIENT - ASSISTANCE VISA\n"
+            f"{peng.NOM_SOCIETE_LEGAL}\n\n"
+            "IDENTIFICATION DU CLIENT\n"
+            f"  Nom : {d['nom']}\n"
+            f"  Prénom : {d['prenom']}\n"
+            f"  Date de naissance : {d['date_naissance']}\n"
+            f"  Nationalité : {d['nationalite']}\n"
+            f"  N° de passeport : {d['num_passeport']}\n"
             f"  Pays de destination : {d['pays_destination']}\n"
-            f"  Type de visa : {d['type_visa']}\n"
-            f"  N° de dossier : {d['num_dossier']}\n\n"
-            f"FRAIS\n"
+            f"  Type de visa : {d['type_visa']}\n\n"
+            "FRAIS\n"
             f"  Frais d'assistance APLM : {d['frais_assistance_txt']}\n"
             f"  Frais de visa : {d['frais_visa_txt']}\n"
-            f"  Mode de paiement des frais de visa : {d['mode_paiement_txt']}\n\n"
-            f"{self._peng.MENTION_FRAIS}\n\n"
-            f"{self._peng.MENTION_GARANTIE}\n"
+            "  Mode de paiement des frais de visa :\n"
+            f"     {d['case_en_ligne']} Paiement en ligne\n"
+            f"     {d['case_lieu_depot']} Paiement sur le lieu de dépôt\n"
+            f"     {d['case_a_confirmer']} À confirmer\n\n"
+            f"{peng.TXT_FRAIS_DISTINCTS}\n\n"
+            f"{peng.TXT_FRAIS_NATURE}\n\n"
+            f"{peng.TXT_FRAIS_NON_REMBOURSABLE}\n\n"
+            f"{peng.TXT_GARANTIE_1}\n\n"
+            f"{peng.TXT_GARANTIE_2}\n\n"
+            f"{peng.TXT_GARANTIE_3}\n"
         )
 
     def _generer(self):
